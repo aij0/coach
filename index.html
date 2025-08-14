@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Chosen Palette: Warm Neutrals -->
     <!-- Application Structure Plan: The application is designed as an interactive timeline/dashboard. The primary structure is a vertical, filterable list of all 17 weeks, presented as accordion cards. This was chosen because a curriculum is inherently sequential, and this structure allows an instructor to get a quick overview of the entire semester while also being able to drill down into a specific week's details without leaving the page. A search/filter function adds a layer of non-linear exploration, allowing users to quickly find specific techniques or games. A top-level dashboard with a chart provides a high-level summary of the curriculum's focus, answering the question "What are we emphasizing this semester?" at a glance. -->
-    <!-- Visualization & Content Choices: 
+    <!-- Visualization & Content Choices:
         - Report Info: Weekly Themes -> Goal: Show curriculum balance -> Viz: Donut Chart -> Interaction: Hover to see details -> Justification: Provides a quick, visual summary of the positional and conceptual focus of the 17-week plan. Library: Chart.js.
         - Report Info: Full Weekly Plan -> Goal: Provide detailed lesson plans -> Presentation: Accordion Cards -> Interaction: Click to expand/collapse -> Justification: Prevents information overload on initial view and allows for focused reading of a single week's plan. Method: HTML/CSS/JS.
         - Report Info: All Text Content -> Goal: Allow quick lookup -> Presentation: Search Filter -> Interaction: Type to filter visible weeks -> Justification: Massively improves usability for instructors needing to find a specific topic quickly without manually scanning all 17 weeks. Method: JS.
@@ -22,20 +22,30 @@
         .accent-bg { background-color: #435A6F; } /* Muted Slate Blue */
         .accent-text { color: #435A6F; }
         .card-bg { background-color: #FFFFFF; }
-        .secondary-bg { background-color: #F5F3EF; } /* Lighter warm gray */
+        .secondary-bg { background-color: #F5F3EF; /* Lighter warm gray */
+        }
         .accordion-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.5s ease-in-out;
         }
         .accordion-content.open {
-            max-height: 1000px; /* Adjust as needed */
+            max-height: 2000px; /* Increased to accommodate longer content */
         }
         .icon-rotate {
             transition: transform 0.3s ease-in-out;
         }
         .icon-rotate.open {
             transform: rotate(180deg);
+        }
+        /* Fix for the IBJJF info section's grid layout, ensuring each card has a proper, independent flex basis and prevents overflow. */
+        #ibjjf-info-content {
+            /* This was changed from a grid layout to a simple vertical space-y layout */
+            word-wrap: break-word; /* Ensures long words break and wrap to the next line */
+        }
+        /* Specific fix for the text being cut off */
+        .ibjjf-card .accordion-content .p-4 {
+            word-wrap: break-word; /* Ensures long words break and wrap to the next line */
         }
     </style>
 </head>
@@ -56,16 +66,26 @@
                 <div class="lg:col-span-2 card-bg p-6 rounded-xl shadow-lg">
                     <h2 class="text-2xl font-bold mb-4 accent-text">Welcome, Coach!</h2>
                     <p class="text-gray-700 mb-4">
-                        Here you can get a high-level overview of the semester's focus, search for specific techniques or games, and instantly access detailed lesson plans for any week. 
+                        Here you can get a high-level overview of the semester's focus, search for specific techniques or other information.
                     </p>
                     <div class="p-4 rounded-lg secondary-bg border border-gray-200">
                         <h3 class="font-bold text-lg mb-2 accent-text">Standard Class Structure (60 Mins)</h3>
-                        <div class="flex flex-wrap gap-2 text-sm">
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Warm-up (15m)</span>
+                        <div class="flex flex-wrap items-center gap-1 text-sm">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Game (5m)</span>
+                            <span class="text-gray-400 font-bold text-xl mx-1">→</span>
+                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full">Warm-up (10m)</span>
+                            <span class="text-gray-400 font-bold text-xl mx-1">→</span>
+                            <span class="bg-teal-100 text-teal-800 px-2 py-1 rounded-full">Drink Break (2.5m)</span>
+                            <span class="text-gray-400 font-bold text-xl mx-1">→</span>
                             <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">Mat Chat (5m)</span>
-                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Technique/Drilling (25m)</span>
+                            <span class="text-gray-400 font-bold text-xl mx-1">→</span>
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Technique (15m)</span>
+                            <span class="text-gray-400 font-bold text-xl mx-1">→</span>
+                            <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Drills (10m)</span>
+                            <span class="text-gray-400 font-bold text-xl mx-1">→</span>
+                            <span class="bg-teal-100 text-teal-800 px-2 py-1 rounded-full">Drink Break 2 (2.5m)</span>
+                            <span class="text-gray-400 font-bold text-xl mx-1">→</span>
                             <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">Rolling (10m)</span>
-                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full">Game (5m)</span>
                         </div>
                     </div>
                 </div>
@@ -120,51 +140,452 @@
                 <h2 class="text-3xl font-bold text-center mb-2 accent-text">Curriculum Explorer</h2>
                 <p class="text-center text-gray-600 mb-6">Click on a week to see the detailed lesson plan. Use the search bar to filter by theme, technique, or game.</p>
                 <div class="max-w-xl mx-auto">
-                    <input type="text" id="searchBar" placeholder="Search for 'Takedown', 'Kimura', 'Jailbreak'..." class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition">
+                    <input type="text" id="searchBar" placeholder="Search for 'Takedown', 'Kimura', 'Rules'..." class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition">
                 </div>
             </div>
 
             <div id="curriculum-list" class="space-y-4">
-                <!-- Weeks will be dynamically inserted here -->
+                <!-- Weeks will be dynamically inserted here by the JS -->
+            </div>
+        </section>
+        
+        <!-- IBJJF Rules, Points, and Belts Info Section -->
+        <section id="ibjjf-info" class="mt-12">
+            <h2 class="text-2xl font-bold mb-4 accent-text">IBJJF Information</h2>
+            <!-- Updated this div's classes to remove the grid layout -->
+            <div id="ibjjf-info-content" class="space-y-4">
+                <!-- Content will be dynamically inserted here by the JS -->
             </div>
         </section>
 
     </div>
 
     <script>
+        const warmUpStandard = "Jogging in a circle (move shoulders, hips etc..). Dynamic stretches (leg swings, torso twists..). Animal Walks (Bear, Crab, Frog, Lizard..). Shrimping. Knee-walk. Breakfalls/Ukemmis, Acrobatics (rolls, cartwheels..)";
+        const gameStandard = "Mato, Mustekala or any other game";
+        const gameDescStandard = "Mato: one starts as mato on the knees and tries to trip others. Once someone trips they also become mato. Game ends when everyone is mato. Who fears the Mustekala?: one or more persons are 'octopuses' and try to tag others. If tagged, they become an octopus and stay in place. The last person remaining wins.";
+
         const curriculumData = [
-            { week: 1, dates: "Aug 18 - Aug 24", theme: "Introduction & Foundational Movements", matChat: "What is Jiu-Jitsu? Respect for your teammates and instructors.", technique: "Breakfalls (forward, backward, side), technical stand-up.", drills: "Shrimping across the mat, forward and backward rolls.", rolling: "Practice breakfalls and technical stand-ups from a kneeling position.", game: "Balance Battle", gameDesc: "Partners sit cross-legged, facing each other. Using only their hands, they gently push on their partner's upper body. The goal is to make the partner lose their balance, causing them to touch the mat with a hand or fall over. The last person balanced wins. Emphasize light, gentle pushing and safety.", category: "Fundamentals" },
-            { week: 2, dates: "Aug 25 - Aug 31", theme: "Closed Guard", matChat: "The importance of position over submission. IBJJF points system for positions.", technique: "Closed guard posture and control, basic sweep (hip bump sweep).", drills: "Partner hip bump sweep drills, closed guard posture maintenance.", rolling: "Start in closed guard and work the sweep.", game: "Guard Battle", gameDesc: "Two partners. One starts in closed guard, the other on top. The goal for the person on top is to pass the guard. The goal for the person in guard is to sweep. The round ends when one partner achieves a dominant position—a pass or a sweep—and a point is awarded.", category: "Guard" },
-            { week: 3, dates: "Sep 1 - Sep 7", theme: "Side Control", matChat: "How to be a good partner (don't smash, use control).", technique: "Side control pin, side control escape (frame and shrimp).", drills: "Partner side control escape drills, transitioning from side control to mount.", rolling: "Start in side control and work escapes and pinning.", game: "Mount Escape Race", gameDesc: "Students get into pairs. One partner starts in mount, the other is on the bottom. On 'go,' the person on the bottom has to escape the mount, get to their knees, and perform a technical stand-up. The first person to complete the movement wins.", category: "Top Position" },
-            { week: 4, dates: "Sep 8 - Sep 14", theme: "Mount", matChat: "What to do when you have mount (control and pressure).", technique: "Mount pin, mount escape (trap and roll).", drills: "Partner trap and roll drills, mount retention drills.", rolling: "Start in mount and work escapes and retention.", game: "Jailbreak", gameDesc: "One person is the 'jailer' in mount, and the person on the bottom is 'in jail.' The goal is for the person in jail to escape the mount and for the jailer to prevent it. They keep track of how many times they can escape in a set time.", category: "Top Position" },
-            { week: 5, dates: "Sep 15 - Sep 21", theme: "Guard Passing 1", matChat: "How to deal with frustration (the path to success is not always straight).", technique: "Knee-cut pass from combat base.", drills: "Partner knee-cut drills, passing the partner's half-guard to get to side control.", rolling: "Start in half guard and work the knee-cut pass.", game: "King of the Hill", gameDesc: "One student is the 'King' and starts in a dominant position like side control. The other students are the 'challengers.' They line up and take turns trying to pass the King's guard or sweep them. If a challenger succeeds, they become the new King.", category: "Guard Passing" },
-            { week: 6, dates: "Sep 22 - Sep 28", theme: "Guard Passing 2", matChat: "The importance of posture and grips.", technique: "Toreando pass.", drills: "Partner Toreando pass drills, transitioning from Toreando to other passes.", rolling: "Start in open guard and work the Toreando pass.", game: "Pass the Guard", gameDesc: "Similar to 'Guard Battle,' but now with a point system. One student starts in closed guard, the other tries to pass. If the student on top successfully passes, they get a point. If the student in guard sweeps, they get a point. The first person to 3 points wins.", category: "Guard Passing" },
-            { week: 7, dates: "Sep 29 - Oct 5", theme: "Submissions 1", matChat: "Tapping and listening to your partner (the most important rule).", technique: "Americana (Keylock) from side control.", drills: "Partner Americana drills, transitioning from side control to Americana.", rolling: "Start in side control and work the Americana.", game: "Mat Monster", gameDesc: "One student is the 'Mat Monster' and starts in side control. They have to try and submit their partner using the Americana. If they get the tap, their partner becomes a 'baby monster' and has to do 5 push-ups before getting back in the game.", category: "Submissions" },
-            { week: 8, dates: "Oct 6 - Oct 12", theme: "Submissions 2", matChat: "What to do when you get 'stuck' in a position.", technique: "Kimura from side control.", drills: "Partner Kimura drills, transitioning from side control to Kimura.", rolling: "Start in side control and work the Kimura.", game: "Submission Challenge", gameDesc: "Two partners go at it in short, timed rounds. The first person to get a submission (using the Kimura) wins the round. After a round, they switch roles and go again.", category: "Submissions" },
-            { week: 9, dates: "Oct 13 - Oct 19", theme: "Back Control", matChat: "The back as the most dominant position.", technique: "Taking the back from a turtle position.", drills: "Partner back take drills, transitioning from side control to the back.", rolling: "Start in turtle and work back takes.", game: "Back Race", gameDesc: "Students line up in two teams. On 'go,' the first person in line from each team gets their partner into a turtle position. They then race to be the first to get to back control and secure their two hooks.", category: "Top Position" },
-            { week: 10, dates: "Oct 20 - Oct 26", theme: "Rear-Naked Choke", matChat: "How to apply a choke safely and effectively.", technique: "Rear-naked choke from the back.", drills: "Partner rear-naked choke drills, transitioning from the back to the choke.", rolling: "Start in back control and work the choke.", game: "Choke Challenge", gameDesc: "Similar to the 'Submission Challenge,' but the only submission allowed is the rear-naked choke. Students must work from the back and get the choke to win the round.", category: "Submissions" },
-            { week: 11, dates: "Oct 27 - Nov 2", theme: "Half Guard", matChat: "How to be a good sport (win or lose).", technique: "Half guard control, half guard sweep.", drills: "Partner half guard drills, transitioning from half guard to a dominant position.", rolling: "Start in half guard and work sweeps and escapes.", game: "Half Guard Scramble", gameDesc: "Students start in half guard. The person on top gets a point for passing to side control. The person on the bottom gets a point for sweeping. The game is played in short, dynamic rounds.", category: "Guard" },
-            { week: 12, dates: "Nov 3 - Nov 9", theme: "Stand-up & Takedowns 1", matChat: "Safety on the feet.", technique: "Single-leg takedown.", drills: "Partner single-leg drills, transitioning from the takedown to a dominant position.", rolling: "Start from a standing position and work takedowns.", game: "Takedown Challenge", gameDesc: "Short rounds where students start on their feet. The goal is to get the single-leg takedown. The first person to successfully get the takedown gets a point.", category: "Stand-up" },
-            { week: 13, dates: "Nov 10 - Nov 16", theme: "Stand-up & Takedowns 2", matChat: "The importance of commitment.", technique: "Double-leg takedown.", drills: "Partner double-leg drills, transitioning from the takedown to a dominant position.", rolling: "Start from a standing position and work double-leg takedowns.", game: "Judo Toss", gameDesc: "A fun, safe game of balance. Partners grab a collar and sleeve grip. The goal is to get your partner off balance and make them touch the mat with something other than their feet. No aggressive throws.", category: "Stand-up" },
-            { week: 14, dates: "Nov 17 - Nov 23", theme: "IBJJF Rules & Points", matChat: "What IBJJF is and why it's important.", technique: "IBJJF points breakdown (takedown, sweep, pass, mount, back).", drills: "Scenario-based drilling.", rolling: "Full-length, points-based rolling rounds.", game: "Point Match", gameDesc: "A simulated IBJJF match. An instructor coaches two students through a live round, calling out points as they are earned for takedowns, sweeps, passes, etc.", category: "Competition" },
-            { week: 15, dates: "Nov 24 - Nov 30", theme: "Tournament Simulation", matChat: "How to deal with nerves and pressure.", technique: "No new techniques. Warm up, review, and practice.", drills: "Short, high-intensity rounds with a specific focus.", rolling: "Tournament rounds with a focus on specific rules.", game: "Tournament simulation", gameDesc: "Organize the class into brackets for a mock tournament. Students can compete in short, points-based matches with a referee. Medals or prizes can be awarded.", category: "Competition" },
-            { week: 16, dates: "Dec 1 - Dec 7", theme: "Advanced Concepts & Rolling", matChat: "The importance of listening to your body and your instructors.", technique: "Review of key concepts from the previous 15 weeks.", drills: "Flow rolling and problem-solving.", rolling: "Longer, full-speed rolling rounds.", game: "Jiu-Jitsu Dodgeball", gameDesc: "Like dodgeball, but players cannot move their feet. They have to use BJJ movements like shrimping and rolls to get out of the way of the ball. If they get hit, they're out.", category: "Review" },
-            { week: 17, dates: "Dec 8 - Dec 17", theme: "Curriculum Review & Promotion Ceremony", matChat: "The journey of Jiu-Jitsu.", technique: "Open mat format where students can choose what they want to work on.", drills: "Games and fun drills.", rolling: "Free rolling and games.", game: "Free rolling and games", gameDesc: "This week's final day can be dedicated to a promotion ceremony, where students receive new stripes or belts to celebrate their hard work and progress.", category: "Review" }
+            {
+                id: 'week-1',
+                week: 1,
+                dates: "Aug 18 - Aug 24",
+                theme: "Introduction & Basic positions",
+                matChat: "Rules! What is Jiu-Jitsu? History. Points. Respect for your teammates and instructors.",
+                warmUp: warmUpStandard,
+                technique: "Breakfalls/Ukemi (forward, backward, side), technical stand-up. Basic positions: closed guard, side control, mount, back control.",
+                drills: "Breakfalls drills, technical stand-up drills",
+                rolling: "Position wrestling (No submissions for beginner rolling!). 10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Position", "Guard"]
+            },
+            {
+                id: 'week-2',
+                week: 2,
+                dates: "Aug 25 - Aug 31",
+                theme: "Takedowns",
+                matChat: "Safety on the feet, finding opportunities for takedowns.",
+                warmUp: warmUpStandard,
+                technique: "Single-leg takedown, double-leg takedown.",
+                drills: "Partner takedown drills focusing on single and double-leg takedowns.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Takedowns"]
+            },
+            {
+                id: 'week-3',
+                week: 3,
+                dates: "Sep 1 - Sep 7",
+                theme: "Closed Guard",
+                matChat: "The importance of position. IBJJF points system for positions. Legal moves.",
+                warmUp: warmUpStandard,
+                technique: "Closed guard posture and control, basic sweep (hip bump sweep), and closed guard escape to standup.",
+                drills: "Partner hip bump sweep drills, closed guard posture maintenance.",
+                rolling: "Position wrestling (No submissions for beginner rolling!). 10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Guard", "Escape", "Sweeps"]
+            },
+            {
+                id: 'week-4',
+                week: 4,
+                dates: "Sep 8 - Sep 14",
+                theme: "Guard Pass Closed Guard",
+                matChat: "Technique is the king! How to deal with frustration (the path to success is not always straight, solution is not always force).",
+                warmUp: warmUpStandard,
+                technique: "Standing base to open closed guard and pass. Knee slice guard pass.",
+                drills: "Partner drills for standing up in closed guard and opening the guard.",
+                rolling: "Position wrestling (No submissions for beginner rolling!). 10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Guard Passing", "Position"]
+            },
+            {
+                id: 'week-5',
+                week: 5,
+                dates: "Sep 15 - Sep 21",
+                theme: "Side Control",
+                matChat: "How to be a good partner (don't smash, use control). We are all here to learn and have fun!",
+                warmUp: warmUpStandard,
+                technique: "Side control pin, side control escape (frame and shrimp).",
+                drills: "Partner side control escape drills, transitioning from side control to mount.",
+                rolling: "Position wrestling (No submissions for beginner rolling!). Start from closed guard with goal to side control. 10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Position", "Escape"]
+            },
+            {
+                id: 'week-6',
+                week: 6,
+                dates: "Sep 22 - Sep 28",
+                theme: "Mount",
+                matChat: "What to do when you have mount (control and pressure).",
+                warmUp: warmUpStandard,
+                technique: "Mount pin, knee on belly. Mount escapes: bridge & roll and hip bump escape.",
+                drills: "Partner trap and roll drills, mount retention drills, and knee on belly transitions.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Position", "Escape", "Knee on Belly"]
+            },
+            {
+                id: 'week-7',
+                week: 7,
+                dates: "Sep 29 - Oct 5",
+                theme: "Armbar",
+                matChat: "The importance of hip pressure and control. **Also, how to break grips and escape a submission before it's too late.**",
+                warmUp: warmUpStandard,
+                technique: "Armbar from mount. **Defense:** The 'Hitchhiker' escape and how to create a good defensive posture by keeping the elbow close to the body and stacking.",
+                drills: "Partner armbar drills: Closed guard pass --> side control --> mount to the armbar. Focus on the Hitchhiker escape from a mounted armbar.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Submissions", "Defense"]
+            },
+            {
+                id: 'week-8',
+                week: 8,
+                dates: "Oct 6 - Oct 12",
+                theme: "Guard Pass Open Guard",
+                matChat: "The importance of posture and grips.",
+                warmUp: warmUpStandard,
+                technique: "Double under, Toreando pass.",
+                drills: "Partner Toreando/Double under pass to side control --> mount --> armbar.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Guard Passing"]
+            },
+            {
+                id: 'week-9',
+                week: 9,
+                dates: "Oct 13 - Oct 19",
+                theme: "Kimura",
+                matChat: "What to do when you get 'stuck' in a position. **Also, how to survive a joint lock by not panicking and understanding your options.**",
+                warmUp: warmUpStandard,
+                technique: "Kimura from side control, also from closed guard. **Defense:** The most common Kimura defenses, such as gripping your belt or your Gi to create a strong frame, and turning into your opponent.",
+                drills: "Partner Kimura drills, transitioning from side control to Kimura. Drills will also include practicing Kimura defense from both side control and closed guard.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Submissions", "Position", "Defense"]
+            },
+            {
+                id: 'week-10',
+                week: 10,
+                dates: "Oct 20 - Oct 26",
+                theme: "Back Control / Turtle Position",
+                matChat: "The back as the most dominant position. Also, the importance of preventing hooks and getting a good posture to defend a back take.",
+                warmUp: warmUpStandard,
+                technique: "Taking the back from a turtle position. **Defense:** The basic back escape (turning into your opponent, creating frames, and clearing hooks).",
+                drills: "Partner back take drills, transitioning from side control to the back. Drills will also include practicing back escape from a seated back take position.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Position", "Back Control", "Defense"]
+            },
+            {
+                id: 'week-11',
+                week: 11,
+                dates: "Oct 27 - Nov 2",
+                theme: "Advanced Takedowns",
+                matChat: "Refining stand-up skills and combining them with fundamental movements.",
+                warmUp: warmUpStandard,
+                technique: "Ankle pick, arm drag.",
+                drills: "Partner drills for ankle picks and arm drags. Transitioning from takedown to a dominant position.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Takedowns"]
+            },
+            {
+                id: 'week-12',
+                week: 12,
+                dates: "Nov 3 - Nov 9",
+                theme: "Americana (Keylock)",
+                matChat: "Tapping and listening to your partner (the most important rule).",
+                warmUp: warmUpStandard,
+                technique: "Americana (Keylock) from side control, also from mount. **Defense:** How to survive a tight Americana by gripping the belt or pants and moving the arm away from the head.",
+                drills: "Partner Americana drills, transitioning from side control to Americana. Drills will also include practicing Americana defense from various positions.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Submissions", "Defense"]
+
+            },
+            {
+                id: 'week-13',
+                week: 13,
+                dates: "Nov 10 - Nov 16",
+                theme: "Half Guard",
+                matChat: "How to be a good sport (win or lose).",
+                warmUp: warmUpStandard,
+                technique: "Half guard control, half guard sweep.",
+                drills: "Partner half guard drills, transitioning from half guard to a dominant position.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Guard", "Escape"]
+            },
+            {
+                id: 'week-14',
+                week: 14,
+                dates: "Nov 17 - Nov 23",
+                theme: "Closed Guard Advanced Sweeps",
+                matChat: "The importance of using your entire body to create movement and unbalance your opponent.",
+                warmUp: warmUpStandard,
+                technique: "Closed guard pendulum sweep, scissor sweep.",
+                drills: "Partner drills for pendulum and scissor sweeps. Focus on hip movement and using grips to control the opponent.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Guard", "Sweeps"]
+            },
+            {
+                id: 'week-15',
+                week: 15,
+                dates: "Nov 24 - Nov 30",
+                theme: "Tournament Simulation",
+                matChat: "How to deal with nerves and pressure.",
+                warmUp: warmUpStandard,
+                technique: "No new techniques. Warm up, review, and practice.",
+                drills: "Short, high-intensity rounds with a specific focus.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Competition"]
+            },
+            {
+                id: 'week-16',
+                week: 16,
+                dates: "Dec 1 - Dec 7",
+                theme: "Advanced Concepts & Rolling",
+                matChat: "How to think a few steps ahead and combine techniques together. Using flow rolling to improve your reactions.",
+                warmUp: warmUpStandard,
+                technique: "Chain submissions (e.g., from an armbar attempt to a triangle), advanced grip fighting.",
+                drills: "Flow rolling with a focus on transitions and chain submissions. Positional sparring from specific scenarios.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Advanced", "Rolling", "Transitions"]
+            },
+            {
+                id: 'week-17',
+                week: 17,
+                dates: "Dec 8 - Dec 14",
+                theme: "Final Review & Grading",
+                matChat: "Celebrating progress and setting goals for the next semester.",
+                warmUp: warmUpStandard,
+                technique: "Open mat with coaches guiding students through review of all techniques from the semester.",
+                drills: "Light rolling and sparring with a focus on applying learned techniques.",
+                rolling: "10 minutes (3 x 3 minute rounds)",
+                game: gameStandard,
+                gameDesc: gameDescStandard,
+                category: ["Review", "Grading"]
+            }
         ];
+
+        // New data for IBJJF information, points, and belts
+        const ibjjfData = [
+            {
+                id: 'what-is-bjj',
+                theme: 'What is Brazilian Jiu-Jitsu?',
+                content: `
+                    <p class="text-gray-700">Brazilian jiu-jitsu (BJJ) is a self-defense system, martial art, and combat sport based on grappling, ground fighting, and submission holds. It is primarily a ground-based fighting style and focuses on taking one's opponent down to the ground, gaining a dominant position, and using a number of techniques to force them into submission via joint locks, chokeholds, or compression locks. It has its roots in jujutsu, judo and catch wrestling.</p>
+                `,
+                searchTerms: 'what is brazilian jiu-jitsu bjj martial art self-defense grappling ground fighting submission',
+                category: 'IBJJF Info'
+            },
+            {
+                id: 'bjj-history',
+                theme: 'History of Brazilian Jiu-Jitsu',
+                content: `
+                    <p class="text-gray-700">Brazilian jiu-jitsu was first developed around 1925 by Brazilian brothers Carlos, Oswaldo, Gastão Jr., and Hélio Gracie, after Carlos was taught Kodokan judo and Catch Wrestling in 1917 by either Mitsuyo Maeda, a travelling Japanese judoka, or one of Maeda's students Jacyntho Ferro. Later on the Gracie family developed their own self-defense system which they named Gracie jiu-jitsu. BJJ eventually came to be its own defined combat sport through the innovations, practices, and adaptation of Gracie jiu-jitsu and judo, and has become one of the essential martial arts for modern mixed martial arts.</p>
+                `,
+                searchTerms: 'bjj history origins gracie family carlos helio maeda',
+                category: 'IBJJF Info'
+            },
+            {
+                id: 'ibjjf-rules',
+                theme: 'IBJJF Rules Overview',
+                content: `
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-lg mb-2 accent-text">General Rules</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>All athletes must wear a clean Gi.</li>
+                            <li>The match is won by submission, points, or referee's decision.</li>
+                            <li>No slams, strikes, or grabbing the inside of the sleeve or pants.</li>
+                        </ul>
+                        <h4 class="font-bold text-lg mb-2 accent-text">Disqualifications</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Illegal moves or submissions.</li>
+                            <li>Lack of sportsmanship or disrespect to the referee.</li>
+                            <li>Any time the referee feels the student is not behaving like a good sport</li>
+                        </ul>
+                    </div>
+                `,
+                searchTerms: 'IBJJF rules slams strikes disqualification',
+                category: 'IBJJF Info'
+            },
+            {
+                id: 'ibjjf-points',
+                theme: 'IBJJF Point System',
+                content: `
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-lg mb-2 accent-text">Points Awarded</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><b>Takedown:</b> 2 points</li>
+                            <li><b>Sweep:</b> 2 points</li>
+                            <li><b>Knee on Belly:</b> 2 points</li>
+                            <li><b>Guard Pass:</b> 3 points</li>
+                            <li><b>Mount:</b> 4 points</li>
+                            <li><b>Back Control (with hooks):</b> 4 points</li>
+                        </ul>
+                        <h4 class="font-bold text-lg mb-2 accent-text">Advantages</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Awarded for a near-score (e.g., almost completing a sweep or takedown).</li>
+                            <li>Advantages are used as a tie-breaker.</li>
+                        </ul>
+                    </div>
+                    `,
+                searchTerms: 'IBJJF points takedown sweep knee on belly guard pass mount back control advantages',
+                category: 'IBJJF Info'
+            },
+            {
+                id: 'ibjjf-belts',
+                theme: 'IBJJF Kids Belt System',
+                content: `
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-lg mb-2 accent-text">Junior Belts (Ages 4-15)</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><b>White Belt:</b> Starting belt for all beginners.</li>
+                            <li><b>Gray Belt:</b> Awarded at age 4.</li>
+                            <li><b>Yellow Belt:</b> Awarded at age 7.</li>
+                            <li><b>Orange Belt:</b> Awarded at age 10.</li>
+                            <li><b>Green Belt:</b> Awarded at age 13.</li>
+                            <li><b>Junior belts transition to blue belt at age 16.</b></li>
+                        </ul>
+                        <h4 class="font-bold text-lg mb-2 accent-text">Adult Belts (Ages 16+)</h4>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><b>Blue Belt</b></li>
+                            <li><b>Purple Belt</b></li>
+                            <li><b>Brown Belt</b></li>
+                            <li><b>Black Belt</b></li>
+                        </ul>
+                    </div>
+                `,
+                searchTerms: 'IBJJF belts white gray yellow orange green blue purple brown black',
+                category: 'IBJJF Info'
+            },
+            {
+                id: 'ibjjf-legal-moves',
+                theme: 'Legal & Illegal Moves (IBJJF Kids)',
+                content: `
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-lg mb-2 accent-text">Legal Moves</h4>
+                        <p class="text-gray-700">These techniques are typically allowed in most IBJJF kids divisions, focusing on position, control, and basic joint locks.</p>
+                        <h5 class="font-semibold text-md mt-4 mb-2 accent-text">Positional Techniques</h5>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Guard pulls</li>
+                            <li>Guard sweeps</li>
+                            <li>Closed guard, open guard, half guard</li>
+                            <li>Mount, side control, back control</li>
+                            <li>Knee-on-belly</li>
+                            <li>Basic takedowns (double leg, single leg, trips)</li>
+                        </ul>
+                        <h5 class="font-semibold text-md mt-4 mb-2 accent-text">Submissions</h5>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Americana</li>
+                            <li>Kimura</li>
+                            <li>Straight armbar (from guard, mount, or back)</li>
+                            <li>⚠️ Submissions must be applied slowly and safely. Refs may stop early to avoid injury.</li>
+                        </ul>
+                        <h4 class="font-bold text-lg mt-6 mb-2 accent-text">Illegal Moves ❌</h4>
+                        <p class="text-gray-700">These techniques are prohibited in all IBJJF kids divisions (under 16 years old).</p>
+                        <h5 class="font-semibold text-md mt-4 mb-2 accent-text">❌ Chokes – Now Illegal (Strict Ruleset)</h5>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Collar chokes (e.g., cross choke, bow and arrow)</li>
+                            <li>Rear naked choke (RNC)</li>
+                            <li>Triangle choke</li>
+                            <li>Guillotine choke</li>
+                            <li>Ezekiel choke</li>
+                        </ul>
+                        <h5 class="font-semibold text-md mt-4 mb-2 accent-text">❌ Joint Attacks</h5>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Heel hooks</li>
+                            <li>Knee bars</li>
+                            <li>Toe holds</li>
+                            <li>Calf slicers</li>
+                            <li>Bicep slicers</li>
+                            <li>Wrist locks</li>
+                            <li>Neck cranks / spinal locks</li>
+                        </ul>
+                        <h5 class="font-semibold text-md mt-4 mb-2 accent-text">❌ Slams & Takedown Fouls</h5>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Slamming to escape a submission</li>
+                            <li>Any slam from guard</li>
+                            <li>Jumping guard</li>
+                            <li>Suplexes</li>
+                            <li>Takedowns that spike the opponent on their head</li>
+                        </ul>
+                        <h5 class="font-semibold text-md mt-4 mb-2 accent-text">❌ Other Dangerous Techniques</h5>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Twister</li>
+                            <li>Can opener</li>
+                            <li>Leg scissor choke</li>
+                            <li>Ezekiel choke with foot</li>
+                            <li>Hands/fingers inside sleeves or pant legs to trap limbs</li>
+                            <li>Verbal distractions, screaming, or unsportsmanlike behavior</li>
+                            <li>Eye gouging, hair pulling, biting, etc.</li>
+                        </ul>
+                    </div>
+                `,
+                searchTerms: 'IBJJF legal illegal moves submissions chokes joint attacks takedowns slams',
+                category: 'IBJJF Info'
+            }
+        ];
+        
+        const allData = [...curriculumData, ...ibjjfData];
 
         document.addEventListener('DOMContentLoaded', () => {
             const curriculumList = document.getElementById('curriculum-list');
+            const ibjjfInfoContent = document.getElementById('ibjjf-info-content');
             const searchBar = document.getElementById('searchBar');
-
-            const renderCurriculum = (data) => {
+            
+            const renderData = (curriculumItems, ibjjfItems) => {
                 curriculumList.innerHTML = '';
-                data.forEach(week => {
-                    const weekCard = `
-                        <div class="week-card card-bg rounded-xl shadow-lg overflow-hidden border border-gray-200/50" data-week="${week.week}">
+                ibjjfInfoContent.innerHTML = '';
+
+                curriculumItems.forEach(item => {
+                    let cardHtml = `
+                        <div class="week-card card-bg rounded-xl shadow-lg overflow-hidden border border-gray-200/50" data-week="${item.week}">
                             <div class="accordion-header p-4 sm:p-6 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition">
                                 <div>
-                                    <p class="text-sm font-semibold accent-text">${week.dates}</p>
-                                    <h3 class="text-xl font-bold text-gray-800">Week ${week.week}: ${week.theme}</h3>
+                                    <p class="text-sm font-semibold accent-text">${item.dates}</p>
+                                    <h3 class="text-xl font-bold text-gray-800">Week ${item.week}: ${item.theme}</h3>
+                                    <p class="text-xs text-gray-500 mt-1">Categories: ${item.category.join(', ')}</p>
                                 </div>
                                 <div class="icon-rotate text-2xl accent-text">&#9660;</div>
                             </div>
@@ -172,35 +593,63 @@
                                 <div class="p-4 sm:p-6 border-t border-gray-200 secondary-bg">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
+                                            <h4 class="font-bold text-lg mb-2 accent-text">Game (${item.game === 'Free rolling and games' ? '5 mins' : '5 mins'})</h4>
+                                            <p class="text-gray-700">${item.gameDesc}</p>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-lg mb-2 accent-text">Warm-up (10 mins)</h4>
+                                            <p class="text-gray-700">${item.warmUp}</p>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-lg mb-2 accent-text">Drink Break (2.5 mins)</h4>
+                                            <p class="text-gray-700">A short break for students to get a quick drink of water.</p>
+                                        </div>
+                                        <div>
                                             <h4 class="font-bold text-lg mb-2 accent-text">Mat Chat (5 mins)</h4>
-                                            <p class="text-gray-700">${week.matChat}</p>
+                                            <p class="text-gray-700">${item.matChat}</p>
                                         </div>
                                         <div>
-                                            <h4 class="font-bold text-lg mb-2 accent-text">Technique (10 mins)</h4>
-                                            <p class="text-gray-700">${week.technique}</p>
+                                            <h4 class="font-bold text-lg mb-2 accent-text">Technique (15 mins)</h4>
+                                            <p class="text-gray-700">${item.technique}</p>
                                         </div>
                                         <div>
-                                            <h4 class="font-bold text-lg mb-2 accent-text">Drills (15 mins)</h4>
-                                            <p class="text-gray-700">${week.drills}</p>
+                                            <h4 class="font-bold text-lg mb-2 accent-text">Drills (10 mins)</h4>
+                                            <p class="text-gray-700">${item.drills}</p>
                                         </div>
                                         <div>
-                                            <h4 class="font-bold text-lg mb-2 accent-text">Specific Rolling (15 mins)</h4>
-                                            <p class="text-gray-700">${week.rolling}</p>
+                                            <h4 class="font-bold text-lg mb-2 accent-text">Drink Break 2 (2.5 mins)</h4>
+                                            <p class="text-gray-700">A second short break before rolling.</p>
                                         </div>
-                                        <div class="md:col-span-2">
-                                            <h4 class="font-bold text-lg mb-2 accent-text">Game: ${week.game} (10 mins)</h4>
-                                            <p class="text-gray-700">${week.gameDesc}</p>
+                                        <div>
+                                            <h4 class="font-bold text-lg mb-2 accent-text">Specific Rolling (10 mins)</h4>
+                                            <p class="text-gray-700">${item.rolling}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `;
-                    curriculumList.innerHTML += weekCard;
+                    curriculumList.innerHTML += cardHtml;
+                });
+
+                ibjjfItems.forEach(item => {
+                    ibjjfInfoContent.innerHTML += `
+                        <div class="ibjjf-card card-bg rounded-xl shadow-lg overflow-hidden border border-gray-200/50">
+                            <div class="accordion-header p-4 sm:p-6 cursor-pointer flex justify-between items-center hover:bg-gray-50 transition">
+                                <h3 class="font-bold text-lg accent-text">${item.theme}</h3>
+                                <div class="icon-rotate text-2xl accent-text">&#9660;</div>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 sm:p-6 border-t border-gray-200 secondary-bg">
+                                    ${item.content}
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 });
             };
 
-            renderCurriculum(curriculumData);
+            renderData(curriculumData, ibjjfData);
 
             curriculumList.addEventListener('click', (e) => {
                 const header = e.target.closest('.accordion-header');
@@ -212,20 +661,46 @@
                 }
             });
 
+            // Add event listener for the IBJJF cards
+            ibjjfInfoContent.addEventListener('click', (e) => {
+                const header = e.target.closest('.accordion-header');
+                if (header) {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('.icon-rotate');
+                    content.classList.toggle('open');
+                    icon.classList.toggle('open');
+                }
+            });
+
             searchBar.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
-                const filteredData = curriculumData.filter(week => 
-                    week.theme.toLowerCase().includes(searchTerm) ||
-                    week.technique.toLowerCase().includes(searchTerm) ||
-                    week.game.toLowerCase().includes(searchTerm) ||
-                    week.matChat.toLowerCase().includes(searchTerm)
+                const filteredCurriculum = curriculumData.filter(item => 
+                    (item.theme && item.theme.toLowerCase().includes(searchTerm)) ||
+                    (item.technique && item.technique.toLowerCase().includes(searchTerm)) ||
+                    (item.game && item.game.toLowerCase().includes(searchTerm)) ||
+                    (item.warmUp && item.warmUp.toLowerCase().includes(searchTerm)) ||
+                    (item.matChat && item.matChat.toLowerCase().includes(searchTerm)) ||
+                    (Array.isArray(item.category) && item.category.some(cat => cat.toLowerCase().includes(searchTerm)))
                 );
-                renderCurriculum(filteredData);
+                
+                const filteredIbjff = ibjjfData.filter(item => 
+                    (item.theme && item.theme.toLowerCase().includes(searchTerm)) ||
+                    (item.searchTerms && item.searchTerms.toLowerCase().includes(searchTerm)) ||
+                    (item.content && item.content.toLowerCase().includes(searchTerm))
+                );
+
+                renderData(filteredCurriculum, filteredIbjff);
             });
 
             // Chart.js implementation
             const focusCounts = curriculumData.reduce((acc, week) => {
-                acc[week.category] = (acc[week.category] || 0) + 1;
+                if (Array.isArray(week.category)) {
+                    week.category.forEach(cat => {
+                        acc[cat] = (acc[cat] || 0) + 1;
+                    });
+                } else {
+                    acc[week.category] = (acc[week.category] || 0) + 1;
+                }
                 return acc;
             }, {});
 
@@ -269,4 +744,5 @@
         });
     </script>
 </body>
+<p>© 2025 Joonas Äijälä</p>
 </html>
