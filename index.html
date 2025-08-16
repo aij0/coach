@@ -47,6 +47,18 @@
         .ibjjf-card .accordion-content .p-4 {
             word-wrap: break-word; /* Ensures long words break and wrap to the next line */
         }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 320px;
+            height: 320px; /* Increased height for chart and legend */
+            min-height: 320px;
+            overflow: visible; /* Ensure legend is visible */
+        }
+        /* Optionally, ensure the card itself doesn't cut off content */
+        .card-bg {
+            overflow: visible;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -248,7 +260,7 @@
                 rolling: "10 minutes (3 x 3 minute rounds)",
                 game: gameStandard,
                 gameDesc: gameDescStandard,
-                category: ["Position", "Escape", "Knee on Belly"]
+                category: ["Position", "Escape"]
             },
             {
                 id: 'week-7',
@@ -304,7 +316,7 @@
                 rolling: "10 minutes (3 x 3 minute rounds)",
                 game: gameStandard,
                 gameDesc: gameDescStandard,
-                category: ["Position", "Back Control", "Defense"]
+                category: ["Position", "Defense"]
             },
             {
                 id: 'week-11',
@@ -384,12 +396,12 @@
                 theme: "Advanced Concepts & Rolling",
                 matChat: "How to think a few steps ahead and combine techniques together. Using flow rolling to improve your reactions.",
                 warmUp: warmUpStandard,
-                technique: "Chain submissions (e.g., from an armbar attempt to a triangle), advanced grip fighting.",
+                technique: "Chain submissions (e.g., from an armbar attempt to a different armbar), advanced grip fighting.",
                 drills: "Flow rolling with a focus on transitions and chain submissions. Positional sparring from specific scenarios.",
                 rolling: "10 minutes (3 x 3 minute rounds)",
                 game: gameStandard,
                 gameDesc: gameDescStandard,
-                category: ["Advanced", "Rolling", "Transitions"]
+                category: ["Transitions"]
             },
             {
                 id: 'week-17',
