@@ -59,6 +59,12 @@
         .card-bg {
             overflow: visible;
         }
+        body, html, .container, .card-bg, .secondary-bg, .accent-text {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -913,6 +919,12 @@
                     }
                 }
             });
+        });
+
+        // Prevent copy event
+        document.addEventListener('copy', function(e) {
+            e.preventDefault();
+            return false;
         });
     </script>
 </body>
